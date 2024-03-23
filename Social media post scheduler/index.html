@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Post Scheduler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #b1f2f5;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #000000;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        textarea,
+        input[type="datetime-local"],
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #platforms {
+            margin-bottom: 20px;
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-label {
+            display: inline-block;
+            background-color: #000000;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"]:checked + .checkbox-label {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #videoPreview {
+            display: none;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Social Media Post Scheduler</h1>
+        <form id="postForm">
+            <label for="postContent">Enter your post:</label>
+            <textarea id="postContent" name="postContent" rows="4" cols="50"></textarea>
+            
+            <label for="caption">Caption:</label>
+            <input type="text" id="caption" name="caption">
+
+            <label for="scheduleTime">Schedule time:</label>
+            <input type="datetime-local" id="scheduleTime" name="scheduleTime">
+
+            <label for="photoUpload">Upload Photo:</label>
+            <input type="file" id="photoUpload" name="photoUpload" accept="image/*">
+            <img id="photoPreview" src="#" alt="Uploaded Photo">
+
+            <label for="videoUpload">Upload Video:</label>
+            <input type="file" id="videoUpload" name="videoUpload" accept="video/*">
+            <video id="videoPreview" controls></video>
+
+            <label for="platforms">Select platforms:</label>
+            <div id="platforms">
+                <input type="checkbox" id="facebook" name="platform" value="facebook">
+                <label class="checkbox-label" for="facebook">Facebook</label>
+                <input type="checkbox" id="twitter" name="platform" value="twitter">
+                <label class="checkbox-label" for="twitter">Twitter</label>
+                <input type="checkbox" id="instagram" name="platform" value="instagram">
+                <label class="checkbox-label" for="instagram">Instagram</label>
+            </div>
+
+            <button type="submit">Schedule Post</button>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript to display uploaded photo and video
+        document.getElementById('photoUpload').onchange = function(evt) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+                document.getElementById('photoPreview').style.display = 'block';
+                // Save photo data URL to local storage
+                localStorage.setItem('photoDataURL', e.target.result);
+            };
+            reader.readAsDataURL(evt.target.files[0]);
+        };
+
+        document.getElementById('videoUpload').onchange = function(evt) {
+            var video = document.getElementById('videoPreview');
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                video.src = e.target.result;
+                video.style.display = 'block';
+                // Save video data URL to local storage
+                localStorage.setItem('videoDataURL', e.target.result);
+            };
+            reader.readAsDataURL(evt.target.files[0]);
+        };
+
+        // Function to save form data to local storage when submitted
+        document.getElementById('postForm').onsubmit = function() {
+            var formData = {
+                postContent: document.getElementById('postContent').value,
+                caption: document.getElementById('caption').value,
+                scheduleTime: document.getElementById('scheduleTime').value,
+                platforms: []
+            };
+
+            // Get selected platforms
+            var platformCheckboxes = document.querySelectorAll('input[name="platform"]:checked');
+            platformCheckboxes.forEach(function(checkbox) {
+                formData.platforms.push(checkbox.value);
+            });
+
+            // Save form data to local storage
+            localStorage.setItem('formData', JSON.stringify(formData));
+        };
+    </script>
+</body>
+</html>
