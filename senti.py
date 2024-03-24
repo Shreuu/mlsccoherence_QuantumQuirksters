@@ -1,3 +1,4 @@
+# Import necessary libraries
 from googleapiclient.discovery import build
 from textblob import TextBlob
 import matplotlib.pyplot as plt
@@ -15,105 +16,73 @@ def fetch_top_videos(query, max_results=5):
     - max_results: Maximum number of videos to fetch (default is 5).
 
     Returns:
-    - video_ids: List of video IDs of the top videos.
+    - video_data: List of dictionaries containing video data.
     """
-    video_ids = []
+    video_data = []
     request = youtube.search().list(
         q=query,
-        part='id',
+        part='id,snippet',  # Include snippet in the request to ensure the 'snippet' key is present
         type='video',
         maxResults=max_results,
         order='viewCount'
     )
     response = request.execute()
-    for item in response['items']:
-        video_ids.append(item['id']['videoId'])
-    return video_ids
+    for item in response.get('items', []):  # Check if 'items' key exists
+        video_id = item['id']['videoId']
+        video_title = item['snippet']['title']
+        video_data.append({'video_id': video_id, 'title': video_title})
+    return video_data
 
-def fetch_video_comments(video_id, max_results=100):
+def fetch_video_statistics(video_id):
     """
-    Fetch comments of a YouTube video.
+    Fetch statistics of a YouTube video.
 
     Args:
     - video_id: ID of the YouTube video.
-    - max_results: Maximum number of comments to fetch (default is 100).
 
     Returns:
-    - comments: List of comments.
+    - statistics: Dictionary containing video statistics.
     """
-    comments = []
-    request = youtube.commentThreads().list(
-        part='snippet',
-        videoId=video_id,
-        maxResults=max_results
+    request = youtube.videos().list(
+        part='statistics',
+        id=video_id
     )
     response = request.execute()
-    for item in response['items']:
-        comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
-        comments.append(comment)
-    return comments
-
-def analyze_sentiment(text):
-    """
-    Perform sentiment analysis on the given text.
-
-    Args:
-    - text: The text to analyze.
-
-    Returns:
-    - sentiment: The sentiment of the text (polarity).
-    """
-    blob = TextBlob(text)
-    sentiment = blob.sentiment.polarity
-    return sentiment
-
-def classify_sentiment(sentiment):
-    """
-    Classify sentiment into positive, negative, or neutral.
-
-    Args:
-    - sentiment: Sentiment score.
-
-    Returns:
-    - category: Sentiment category (positive, negative, or neutral).
-    """
-    if sentiment > 0.2:
-        return 'positive'
-    elif sentiment < -0.2:
-        return 'negative'
+    items = response.get('items', [])
+    if items:
+        statistics = items[0]['statistics']
+        return statistics
     else:
-        return 'neutral'
-
-def plot_sentiment_comparison(sentiments):
-    """
-    Plot sentiment comparison of comments from top videos on YouTube.
-
-    Args:
-    - sentiments: List of sentiment categories for each video.
-    """
-    categories = ['positive', 'negative', 'neutral']
-    counts = {category: [video_sentiments.count(category) for video_sentiments in sentiments] for category in categories}
-
-    bar_width = 0.3
-    x_values = range(len(sentiments))
-    for i, category in enumerate(categories):
-        plt.bar([x + i * bar_width for x in x_values], counts[category], bar_width, label=category)
-
-    plt.xlabel('Top Videos')
-    plt.ylabel('Count')
-    plt.title('Sentiment Comparison of Top Videos on YouTube')
-    plt.xticks([x + bar_width for x in x_values], [f'Video {i+1}' for i in x_values])
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+        print("No statistics found for the given video ID.")
+        return {}
 
 # Example usage
 if __name__ == "__main__":
     search_query = 'music'  # Search query to find top videos
     top_videos = fetch_top_videos(search_query)
-    sentiments = []
-    for video_id in top_videos:
-        comments = fetch_video_comments(video_id)
-        video_sentiments = [classify_sentiment(analyze_sentiment(comment)) for comment in comments]
-        sentiments.append(video_sentiments)
-    plot_sentiment_comparison(sentiments)
+    video_statistics = []
+    for video in top_videos:
+        statistics = fetch_video_statistics(video['video_id'])
+        if statistics:
+            video_statistics.append({
+                'title': video['title'],
+                'views': int(statistics.get('viewCount', 0)),
+                'likes': int(statistics.get('likeCount', 0)),
+                'comments': int(statistics.get('commentCount', 0))
+            })
+
+    # Plot line graph
+    categories = ['views', 'likes', 'comments']
+    plt.figure(figsize=(10, 6))
+    for category in categories:
+        data = [video[category] for video in video_statistics]
+        plt.plot([video['title'] for video in video_statistics], data, marker='o', label=category)
+
+    plt.title('Comparison of Top Videos on YouTube')
+    plt.xlabel('Videos')
+    plt.ylabel('Count')
+    plt.xticks(rotation=45)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
