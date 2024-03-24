@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+
+  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+  
+  <title>social  trendspotter</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .attribution { font-size: 11px; text-align: center; }
+    .attribution a { color: hsl(228, 45%, 44%); }
+    .charts-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+    }
+    .chart-wrapper {
+      width: 45%; 
+    }
+  </style>
+</head>
+<body>
+  <div class="background-box"></div>
+  <div class="container">
+    <header class="header">
+      <div class="header__left">
+        <h1 class="header__title">Social Media Dashboard</h1>
+        <span class="header__subtext">Total Followers: -</span>
+      </div>
+      <div class="header__right toggle">
+        <label for="dark_mode" title="Dark mode toggle" class="toggle__label">Dark Mode</label>
+        <div class="toggle__button-wrapper">
+          <input type="checkbox" name="dark_mode" class="toggle__checkbox" id="dark_mode">
+          <span class="toggle__button"></span>
+        </div>
+      </div>
+    </header>
+
+    <section class="cards">
+      
+    </section>
+
+    <section class="bottom-cards">
+      <h2 class="bottom-cards__title">Overview - Today</h2>
+      <div class="charts-container">
+        <div class="chart-wrapper">
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="lineGraph"></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="attribution">
+    Challenge by <a href="https://www.frontendmentor.io?ref=challenge" target="_blank">Dashboard</a>. 
+    Coded by <a href="#"></a>.
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const toggleButton = document.getElementById('dark_mode');
+    const body = document.getElementsByTagName("body")[0];
+
+    toggleButton.addEventListener('click', () => {
+      body.classList.toggle('light');
+    });
+
+    
+    const pieChartData = {
+      labels: ['Facebook', 'Twitter', 'Instagram', 'YouTube'],
+      datasets: [{
+        label: 'Followers',
+        data: [1987, 1044, 11000, 8239],
+        backgroundColor: [
+          '#3b5998',
+          '#1da1f2',
+          '#c13584',
+          '#ff0000'
+        ]
+      }]
+    };
+
+    
+    const graphData = {
+      labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+      datasets: [{
+        label: 'Page Views',
+        data: [100, 150, 200, 250, 300, 350, 400],
+        borderColor: '#4caf50',
+        backgroundColor: 'rgba(76, 175, 80, 0.2)'
+      }]
+    };
+
+    
+    const pieChartCtx = document.getElementById('pieChart').getContext('2d');
+    const pieChart = new Chart(pieChartCtx, {
+      type: 'pie',
+      data: pieChartData,
+      options: {
+        responsive: true,
+        animation: {
+          animateScale: true,
+          animateRotate: true
+        }
+      }
+    });
+
+    
+    const lineGraphCtx = document.getElementById('lineGraph').getContext('2d');
+    const lineGraph = new Chart(lineGraphCtx, {
+      type: 'line',
+      data: graphData,
+      options: {
+        responsive: true,
+        animation: {
+          duration: 1000,
+          easing: 'easeInOutQuad'
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+  </script>
+</body>
+</html>
